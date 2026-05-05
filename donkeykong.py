@@ -316,57 +316,90 @@ def draw_mario(surf, cx, by, frame=0, facing=1, state='walk', dead_anim=0):
     surf.blit(s, (x, y))
 
 def draw_dk(surf, cx, by, frame=0, throwing=False):
-    """Draw Donkey Kong (~52×52 pixels)."""
-    x = int(cx - 26)
-    y = int(by - 52)
-    s = pygame.Surface((52, 56), pygame.SRCALPHA)
+    """Draw Donkey Kong — 66×84 pixel sprite, all parts overlapping so no gaps."""
+    SW, SH = 66, 84
+    FUR   = DKMONK                  # (100, 60, 20) dark brown fur
+    FACE  = (175, 125, 70)          # lighter tan muzzle/chest
+    INNER = (80,  45, 15)           # inner ear / shadow
+    TOOTH = (240, 240, 220)
 
-    # Body
-    rect(s, DKMONK,   8, 18, 36, 28)
-    # Chest / belly (lighter)
-    rect(s, (150, 100, 55), 13, 20, 26, 22)
-    # Head
-    circle(s, DKMONK,  26, 12, 14)
-    # Face
-    rect(s, (180, 130, 80), 17, 10, 18, 12)
-    # Eyes
-    rect(s, BLACK,  19,  8,  5,  5)
-    rect(s, BLACK,  28,  8,  5,  5)
-    rect(s, WHITE,  20,  9,  2,  2)
-    rect(s, WHITE,  29,  9,  2,  2)
-    # Nose
-    circle(s, (180, 130, 80), 26, 16, 5)
-    rect(s, BLACK,  22, 14,  4,  3)
-    rect(s, BLACK,  26, 14,  4,  3)
-    # Mouth
-    rect(s, BLACK,  19, 19, 14,  3)
-    rect(s, WHITE,  20, 19, 12,  2)
-    # Ears
-    circle(s, DKMONK, 12, 11, 5)
-    circle(s, DKMONK, 40, 11, 5)
+    s = pygame.Surface((SW, SH), pygame.SRCALPHA)
 
+    # ── ARMS (behind body — draw first) ──────────────────────────────────────
     tf = frame % 2
     if throwing:
-        # Left arm down, right arm raised with barrel
-        rect(s, DKMONK,  0, 26, 12, 10)   # left arm out
-        rect(s, DKMONK, 40,  8, 12, 16)   # right arm raised
-        rect(s, DKMONK, 40, 20, 12, 10)
+        # Left arm hangs low
+        pygame.draw.ellipse(s, FUR,  ( 0, 36, 14, 26))
+        circle(s, FUR,  7, 62, 7)          # left fist
+        # Right arm raised high
+        pygame.draw.ellipse(s, FUR,  (52,  4, 14, 30))
+        circle(s, FUR, 59,  5, 7)          # right fist (top)
+        # Tiny barrel in right hand
+        pygame.draw.ellipse(s, BARREL_D, (51,  0, 16, 10))
+        pygame.draw.ellipse(s, BARREL_L, (53,  1, 12,  7))
+        rect(s, BARREL_D, 51,  4,  16,  2)  # band
     else:
-        if tf == 0:
-            rect(s, DKMONK,  0, 22, 12, 14)   # arms at sides
-            rect(s, DKMONK, 40, 22, 12, 14)
-        else:
-            rect(s, DKMONK,  0, 18, 12, 18)
-            rect(s, DKMONK, 40, 18, 12, 18)
+        arm_top = 28 if tf == 0 else 24
+        arm_h   = 28 if tf == 0 else 32
+        # Left arm
+        pygame.draw.ellipse(s, FUR,  ( 0, arm_top, 14, arm_h))
+        circle(s, FUR,  7, arm_top + arm_h,  7)
+        # Right arm
+        pygame.draw.ellipse(s, FUR,  (52, arm_top, 14, arm_h))
+        circle(s, FUR, 59, arm_top + arm_h,  7)
 
-    # Legs
-    rect(s, DKMONK,  9, 44, 14, 12)
-    rect(s, DKMONK, 29, 44, 14, 12)
-    # Feet
-    rect(s, DKMONK,  6, 54, 18,  2)
-    rect(s, DKMONK, 28, 54, 18,  2)
+    # ── BODY (torso) ──────────────────────────────────────────────────────────
+    # Main torso blob — fills from neck to hips
+    pygame.draw.ellipse(s, FUR,   ( 8, 28, 50, 42))
+    # Chest / belly lighter patch
+    pygame.draw.ellipse(s, FACE,  (14, 32, 38, 32))
 
-    surf.blit(s, (x, y))
+    # ── LEGS ─────────────────────────────────────────────────────────────────
+    # Left leg — overlaps body bottom so no gap
+    pygame.draw.ellipse(s, FUR,   (10, 60, 20, 26))
+    # Right leg
+    pygame.draw.ellipse(s, FUR,   (36, 60, 20, 26))
+    # Feet (wider ellipses at bottom)
+    pygame.draw.ellipse(s, FUR,   ( 4, 74, 26, 10))
+    pygame.draw.ellipse(s, FUR,   (36, 74, 26, 10))
+
+    # ── HEAD ─────────────────────────────────────────────────────────────────
+    # Skull — center at (33, 17), radius 17 → top=0, bottom=34, overlaps body at 28 ✓
+    circle(s, FUR,  33, 17, 17)
+
+    # Ears (outside skull, overlap it)
+    circle(s, FUR,  13, 13,  8)
+    circle(s, INNER, 13, 13,  5)
+    circle(s, FUR,  53, 13,  8)
+    circle(s, INNER, 53, 13,  5)
+
+    # Muzzle / face
+    pygame.draw.ellipse(s, FACE, (20, 14, 26, 22))
+
+    # Eyes — white sclera then dark pupil then highlight
+    pygame.draw.ellipse(s, WHITE, (20,  8,  9,  8))
+    pygame.draw.ellipse(s, WHITE, (37,  8,  9,  8))
+    circle(s, BLACK, 24, 12,  4)
+    circle(s, BLACK, 41, 12,  4)
+    circle(s, WHITE, 23, 10,  1)   # gleam
+    circle(s, WHITE, 40, 10,  1)
+
+    # Brow ridge (angry)
+    pygame.draw.line(s, INNER, (18, 7), (28, 10), 3)
+    pygame.draw.line(s, INNER, (38, 10), (48, 7), 3)
+
+    # Nose
+    pygame.draw.ellipse(s, FACE, (25, 20, 16, 10))
+    circle(s, INNER, 29, 24, 3)   # nostril L
+    circle(s, INNER, 37, 24, 3)   # nostril R
+
+    # Mouth
+    rect(s, INNER, 22, 30, 22, 4, 1)
+    rect(s, TOOTH, 23, 30,  9, 3)   # left teeth
+    rect(s, TOOTH, 34, 30,  9, 3)   # right teeth
+
+    # Draw sprite: feet at `by`, horizontally centered
+    surf.blit(s, (int(cx) - SW // 2, int(by) - SH + 2))
 
 def draw_barrel(surf, cx, by, roll_frame=0):
     """Draw a rolling barrel."""
