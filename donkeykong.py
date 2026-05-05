@@ -145,10 +145,10 @@ LADDERS = [
     (370,   95,  205),
 ]
 
-DK_CX, DK_BY    = 105,  60   # DK centre-x, bottom-y on top platform
-PAULINE_CX       = 630
+DK_CX, DK_BY    = 115,  95   # DK centre-x, bottom-y = top platform surface y
+PAULINE_CX       = 620
 MARIO_START_CX   = 60
-MARIO_START_BY   = 505
+MARIO_START_BY   = 535   # ground platform surface y → starts on ground
 PLATFORM_H       = 14
 LADDER_W         = 16
 
@@ -198,122 +198,104 @@ def draw_ladder(surf, cx, yt, yb):
         rect(surf, LADDS, cx - hw,     ry + 1, LADDER_W, 3)
         rect(surf, LADDC, cx - hw,     ry,     LADDER_W, 3)
 
-def draw_mario(surf, cx, by, frame=0, facing=1, state='walk', dead_anim=0):
+def draw_mario(surf, cx, by, frame=0, facing=1, state='walk', dead_anim=0, scale=1.0):
     """
-    Draw Mario as a ~22×30 pixel figure.
+    Draw Mario as a 32×44 pixel figure.
+    scale: 1.0 for full size, 0.5 for HUD mini-icons, etc.
     state: 'walk' | 'jump' | 'climb' | 'dead'
-    frame: animation frame index
-    facing: +1 right, -1 left
     """
-    x = int(cx - 11)
-    y = int(by - 30)
+    SW, SH = 32, 44
+
+    def _build():
+        s = pygame.Surface((SW, SH), pygame.SRCALPHA)
+
+        # ── Hat ───────────────────────────────────────────────────────────────
+        rect(s, RHAT,  5,  0, 22,  8)    # crown
+        rect(s, RHAT,  1,  6, 30,  5)    # brim
+
+        # ── Head ──────────────────────────────────────────────────────────────
+        rect(s, SKIN,  7,  9, 18, 14)
+        ex = 21 if facing == 1 else 7
+        rect(s, BLACK, ex, 12,  4,  5)   # eye
+        rect(s, WHITE, ex+1, 13, 2,  2)  # gleam
+        rect(s, SKIN,  13, 19,  6,  4)   # nose
+        rect(s, BROWN,  7, 19,  7,  3)   # moustache L
+        rect(s, BROWN, 18, 19,  7,  3)   # moustache R
+
+        if state == 'climb':
+            cf = frame % 2
+            if cf == 0:
+                rect(s, RED,  0, 22, 10,  7)   # L arm up
+                rect(s, RED, 22, 28, 10,  7)   # R arm down
+            else:
+                rect(s, RED,  0, 28, 10,  7)
+                rect(s, RED, 22, 22, 10,  7)
+            rect(s, RED,  6, 22, 20, 13)        # shirt body
+            rect(s, BLUE, 9, 22, 14, 13)        # overall bib
+            rect(s, RED,  6, 22,  4,  8)        # shirt sides
+            rect(s, RED, 22, 22,  4,  8)
+            rect(s, BLUE, 5, 34, 10,  8)        # L leg
+            rect(s, BLUE,17, 34, 10,  8)        # R leg
+            rect(s, DKBROWN, 3, 40, 13, 4)
+            rect(s, DKBROWN,16, 40, 13, 4)
+
+        elif state == 'jump':
+            rect(s, RED,  0, 20, 10,  8)        # L arm up
+            rect(s, RED, 22, 20, 10,  8)        # R arm up
+            rect(s, RED,  6, 22, 20, 12)
+            rect(s, BLUE, 9, 22, 14, 12)
+            rect(s, RED,  6, 22,  4,  8)
+            rect(s, RED, 22, 22,  4,  8)
+            rect(s, BLUE, 3, 33, 12,  8)        # legs spread
+            rect(s, BLUE,17, 33, 12,  8)
+            rect(s, DKBROWN, 1, 39, 13, 5)
+            rect(s, DKBROWN,18, 39, 13, 5)
+
+        else:  # walk
+            wf = frame % 2
+            if wf == 0:
+                rect(s, RED,  0, 23, 10,  8)    # L arm fwd
+                rect(s, RED, 22, 27, 10,  8)    # R arm back
+            else:
+                rect(s, RED,  0, 27, 10,  8)
+                rect(s, RED, 22, 23, 10,  8)
+            rect(s, RED,  6, 22, 20, 12)
+            rect(s, BLUE, 9, 22, 14, 12)
+            rect(s, RED,  6, 22,  4,  8)
+            rect(s, RED, 22, 22,  4,  8)
+            # Suspender buckles
+            rect(s, GOLD, 10, 23,  4,  3)
+            rect(s, GOLD, 18, 23,  4,  3)
+            if wf == 0:
+                rect(s, BLUE,  6, 33, 11, 10)   # L leg fwd
+                rect(s, BLUE, 15, 31, 11, 10)   # R leg back
+                rect(s, DKBROWN, 4, 41, 14, 4)
+                rect(s, DKBROWN,14, 39, 14, 4)
+            else:
+                rect(s, BLUE,  6, 31, 11, 10)
+                rect(s, BLUE, 15, 33, 11, 10)
+                rect(s, DKBROWN, 4, 39, 14, 4)
+                rect(s, DKBROWN,14, 41, 14, 4)
+        return s
 
     if state == 'dead':
-        # Spinning dead Mario
+        s = _build()
         angle = dead_anim * 18
-        s = pygame.Surface((24, 32), pygame.SRCALPHA)
-        # Hat
-        rect(s, RHAT,    3,  0, 18,  6)
-        # Head
-        rect(s, SKIN,    5,  5, 14, 10)
-        rect(s, BLACK,   8,  8,  3,  3)    # eye
-        rect(s, BROWN,  10, 12,  5,  2)    # moustache
-        # Body
-        rect(s, RED,     3, 14, 18,  8)
-        # Overalls
-        rect(s, BLUE,    5, 21, 14,  8)
-        rect(s, BLUE,    3, 18,  6,  6)
-        rect(s, BLUE,   15, 18,  6,  6)
-        # Shoes
-        rect(s, DKBROWN, 3, 27,  8,  4)
-        rect(s, DKBROWN, 13, 27, 8,  4)
         rs = pygame.transform.rotate(s, angle)
-        surf.blit(rs, (cx - rs.get_width()//2, by - rs.get_height()//2))
+        surf.blit(rs, (int(cx) - rs.get_width()//2,
+                       int(by) - rs.get_height()//2))
         return
 
-    s = pygame.Surface((24, 32), pygame.SRCALPHA)
-
-    # Hat
-    hat_col = RHAT
-    rect(s, hat_col,  3,  0, 18,  5)
-    rect(s, hat_col,  1,  3, 22,  4)   # brim
-
-    # Head
-    rect(s, SKIN,     5,  6, 14, 10)
-    # Eye
-    ex = 14 if facing == 1 else 5
-    rect(s, BLACK,   ex,  9,  3,  3)
-    # Nose
-    rect(s, SKIN,    10, 13,  4,  3)
-    # Moustache
-    rect(s, BROWN,    6, 13,  5,  2)
-    rect(s, BROWN,   13, 13,  5,  2)
-
-    if state == 'climb':
-        cf = frame % 2
-        # Arms alternate
-        if cf == 0:
-            rect(s, RED,  0, 16, 8, 5)   # left arm up
-            rect(s, RED, 16, 20, 8, 5)   # right arm down
-        else:
-            rect(s, RED,  0, 20, 8, 5)
-            rect(s, RED, 16, 16, 8, 5)
-        # Body
-        rect(s, RED,   6, 15, 12, 10)
-        # Overalls
-        rect(s, BLUE,  6, 23, 12,  8)
-        # Legs split
-        rect(s, BLUE,  4, 26,  6, 5)
-        rect(s, BLUE, 14, 26,  6, 5)
-        rect(s, DKBROWN, 3, 29, 7, 3)
-        rect(s, DKBROWN,13, 29, 7, 3)
-
-    elif state == 'jump':
-        # Arms up
-        rect(s, RED,   0,  14, 7,  5)
-        rect(s, RED,  17,  14, 7,  5)
-        # Body
-        rect(s, RED,   4,  15, 16, 9)
-        # Overall bib
-        rect(s, BLUE,  6,  15, 12, 9)
-        rect(s, RED,   4,  15,  4, 5)
-        rect(s, RED,  16,  15,  4, 5)
-        # Legs spread
-        rect(s, BLUE,  2,  24,  8, 6)
-        rect(s, BLUE, 14,  24,  8, 6)
-        rect(s, DKBROWN, 0, 28, 9, 4)
-        rect(s, DKBROWN,14, 28, 9, 4)
-
-    else:  # walk frames 0,1
-        wf = frame % 2
-        # Arm swing
-        if wf == 0:
-            rect(s, RED,   0, 17,  7,  5)   # left arm forward
-            rect(s, RED,  17, 20,  7,  5)   # right arm back
-        else:
-            rect(s, RED,   0, 20,  7,  5)
-            rect(s, RED,  17, 17,  7,  5)
-        # Body (shirt)
-        rect(s, RED,   4, 15, 16, 10)
-        # Overall bib
-        rect(s, BLUE,  6, 15, 12, 10)
-        rect(s, RED,   4, 15,  4,  6)
-        rect(s, RED,  16, 15,  4,  6)
-        # Legs
-        if wf == 0:
-            rect(s, BLUE,  4, 24,  8,  7)
-            rect(s, BLUE, 12, 22,  8,  7)
-            rect(s, DKBROWN,  3, 29,  9,  4)
-            rect(s, DKBROWN, 12, 27,  9,  4)
-        else:
-            rect(s, BLUE,  4, 22,  8,  7)
-            rect(s, BLUE, 12, 24,  8,  7)
-            rect(s, DKBROWN,  3, 27,  9,  4)
-            rect(s, DKBROWN, 12, 29,  9,  4)
-
+    s = _build()
     if facing == -1:
         s = pygame.transform.flip(s, True, False)
-    surf.blit(s, (x, y))
+
+    if scale != 1.0:
+        ns = (int(SW * scale), int(SH * scale))
+        s = pygame.transform.scale(s, ns)
+        surf.blit(s, (int(cx) - ns[0]//2, int(by) - ns[1]))
+    else:
+        surf.blit(s, (int(cx) - SW//2, int(by) - SH))
 
 def draw_dk(surf, cx, by, frame=0, throwing=False):
     """Draw Donkey Kong — 66×84 pixel sprite, all parts overlapping so no gaps."""
@@ -443,37 +425,48 @@ def draw_flame(surf, cx, by, frame=0):
     rect(surf, WHITE, x+3, y-11, 1, 1)
 
 def draw_pauline(surf, cx, by, frame=0):
-    """Draw Pauline waving."""
-    x = int(cx - 9)
-    y = int(by - 36)
+    """Draw Pauline waving — 28×48 px, stands on platform at `by`."""
+    SW, SH = 28, 48
     f = frame % 2
-    s = pygame.Surface((20, 38), pygame.SRCALPHA)
+    s = pygame.Surface((SW, SH), pygame.SRCALPHA)
 
-    # Hair
-    rect(s, GOLD,   3,  0, 14,  8)
-    circle(s, GOLD, 10,  5,  7)
+    # Hair — golden, full top
+    circle(s, GOLD,    14,  6, 10)
+    rect(s,   GOLD,     4,  4, 20, 12)
+    # Side curls
+    circle(s, GOLD,     5, 14,  5)
+    circle(s, GOLD,    23, 14,  5)
+
     # Head
-    rect(s, SKIN,   4,  5, 12, 11)
-    # Eyes
-    rect(s, BLACK,  6,  8,  2,  2)
-    rect(s, BLACK, 12,  8,  2,  2)
-    # Mouth
-    rect(s, RED,    7, 13,  6,  2)
-    # Arms (wave)
-    if f == 0:
-        rect(s, SKIN,  0,  16,  4,  8)   # left arm up
-        rect(s, SKIN, 16,  20,  4,  8)
-    else:
-        rect(s, SKIN,  0,  20,  4,  8)
-        rect(s, SKIN, 16,  16,  4,  8)
-    # Dress
-    rect(s, PINK,   4,  15, 12, 14)
-    poly(s, PINK, [(2, 28), (18, 28), (20, 38), (0, 38)])
-    # Shoes
-    rect(s, RED,    3,  34,  5,  4)
-    rect(s, RED,   12,  34,  5,  4)
+    rect(s, SKIN,       7,  8, 14, 15)
 
-    surf.blit(s, (x, y))
+    # Eyes
+    rect(s, BLACK,      9, 12,  3,  3)
+    rect(s, BLACK,     16, 12,  3,  3)
+    rect(s, WHITE,     10, 13,  1,  1)
+    rect(s, WHITE,     17, 13,  1,  1)
+    # Smile
+    rect(s, RED,       10, 20,  8,  2)
+
+    # Arms (wave alternating)
+    if f == 0:
+        rect(s, SKIN,   0, 22,  6, 10)   # L arm raised
+        rect(s, SKIN,  22, 26,  6, 10)   # R arm low
+    else:
+        rect(s, SKIN,   0, 26,  6, 10)
+        rect(s, SKIN,  22, 22,  6, 10)
+
+    # Dress body
+    rect(s, PINK,       6, 22, 16, 16)
+    # Dress flare (trapezoid)
+    poly(s, PINK, [(3, 36), (25, 36), (27, 48), (1, 48)])
+    # Belt
+    rect(s, RED,        6, 28, 16,  3)
+    # Shoes
+    rect(s, RED,        5, 44,  8,  4)
+    rect(s, RED,       15, 44,  8,  4)
+
+    surf.blit(s, (int(cx) - SW//2, int(by) - SH))
 
 def draw_bonus_item(surf, cx, by, kind='purse', frame=0):
     """Draw a collectable bonus item."""
@@ -723,7 +716,7 @@ class Pauline:
 
     @property
     def rect(self):
-        return pygame.Rect(int(self.cx) - 14, int(self.by) - 36, 28, 36)
+        return pygame.Rect(int(self.cx) - 14, int(self.by) - 48, 28, 48)
 
 # ── DonkeyKong ────────────────────────────────────────────────────────────────
 class DonkeyKong:
@@ -788,7 +781,7 @@ class BonusItem:
 
 # ── Mario (Player) ────────────────────────────────────────────────────────────
 class Mario:
-    W2 = 11; H2 = 30
+    W2 = 14; H2 = 42   # half-width=14, height=42 matching 32×44 sprite
 
     def __init__(self, cx, by):
         self.cx = float(cx); self.by = float(by)
@@ -988,10 +981,10 @@ def draw_hud(surf, score, high_score, lives, level, bonus_timer):
     surf.blit(s, (W//2 - s.get_width()//2, 10))
     # Level
     text_shadow(surf, FONT_SM, f"LVL {level}", CYAN, W - 90, 8)
-    # Lives (small Mario icons)
+    # Lives (small Mario icons, scaled to fit HUD height)
     for i in range(lives):
-        lx = W - 130 - i * 22
-        draw_mario(surf, lx, 34, 0, 1, 'walk')
+        lx = W - 135 - i * 20
+        draw_mario(surf, lx, 36, 0, 1, 'walk', scale=0.52)
 
     # Bonus countdown bar
     if bonus_timer > 0:
