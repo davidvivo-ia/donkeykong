@@ -66,10 +66,10 @@ class TestPlayingPhase:
 
     def test_mario_falls_due_to_gravity(self, engine: GameEngine) -> None:
         w = self._playing_world(engine)
-        initial_y = w.mario.position.y
         # Con input idle Mario debe caer si no está en suelo
-        w2 = replace(w, mario=replace(w.mario, on_ground=False,
-                                       position=Position(w.mario.position.x, 300.0)))
+        w2 = replace(
+            w, mario=replace(w.mario, on_ground=False, position=Position(w.mario.position.x, 300.0))
+        )
         out = engine.tick(w2, InputState.idle())
         # La Y debería aumentar (caer)
         assert out.world.mario.position.y >= 300.0
@@ -84,9 +84,16 @@ class TestPlayingPhase:
     def test_score_increases_after_barrel_jump(self, engine: GameEngine) -> None:
         w = self._playing_world(engine)
         from donkeykong.domain.entities import Barrel, Velocity
+
         # Colocar un barril justo debajo de Mario
-        barrel = Barrel(99, Position(w.mario.position.x, w.mario.position.y + 8),
-                        Velocity(-1.0, 0.0), 0, 0, True)
+        barrel = Barrel(
+            99,
+            Position(w.mario.position.x, w.mario.position.y + 8),
+            Velocity(-1.0, 0.0),
+            0,
+            0,
+            True,
+        )
         w2 = replace(
             w,
             barrels=(barrel,),
@@ -126,6 +133,7 @@ class TestNewLevel:
 
     def test_resets_barrels(self, engine: GameEngine) -> None:
         from donkeykong.domain.entities import Barrel, Velocity
+
         w = engine.new_game()
         barrel = Barrel(0, Position(400.0, 400.0), Velocity.zero(), 0, 0, True)
         w2 = replace(w, barrels=(barrel,))
@@ -148,6 +156,7 @@ class TestRespawn:
 
     def test_clears_barrels_and_flames(self, engine: GameEngine) -> None:
         from donkeykong.domain.entities import Barrel, Velocity
+
         w = engine.new_game()
         barrel = Barrel(0, Position(400.0, 400.0), Velocity.zero(), 0, 0, True)
         w2 = replace(w, barrels=(barrel,))

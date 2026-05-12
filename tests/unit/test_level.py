@@ -23,7 +23,7 @@ class TestPlatform:
 class TestLadder:
     def test_mario_aligned(self) -> None:
         lad = Ladder(160.0, 425.0, 535.0)
-        assert lad.mario_aligned(162.0)   # dentro del umbral 12px
+        assert lad.mario_aligned(162.0)  # dentro del umbral 12px
 
     def test_mario_not_aligned(self) -> None:
         lad = Ladder(160.0, 425.0, 535.0)

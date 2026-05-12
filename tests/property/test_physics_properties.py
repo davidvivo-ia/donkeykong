@@ -6,14 +6,13 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from donkeykong.domain.entities import Position, Velocity
+from donkeykong.domain.level import Platform
 from donkeykong.domain.physics import (
-    GRAVITY,
     apply_gravity,
     clamp_to_screen,
     integrate,
     resolve_platform_collision_full,
 )
-from donkeykong.domain.level import Platform
 
 _floats = st.floats(min_value=-1000.0, max_value=1000.0, allow_nan=False, allow_infinity=False)
 _pos_floats = st.floats(min_value=0.0, max_value=1000.0, allow_nan=False, allow_infinity=False)

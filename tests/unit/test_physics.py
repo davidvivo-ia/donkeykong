@@ -9,7 +9,6 @@ from donkeykong.domain.level import Ladder, Platform
 from donkeykong.domain.physics import (
     GRAVITY,
     JUMP_VELOCITY,
-    WALK_SPEED,
     apply_gravity,
     barrel_roll_velocity,
     clamp_to_screen,
@@ -79,30 +78,30 @@ class TestPlatformCollision:
         return Platform(0.0, 800.0, y, +1, 0)
 
     def test_lands_on_platform(self) -> None:
-        p = Position(100.0, 102.0)   # 2px debajo de la superficie
-        v = Velocity(0.0, 5.0)       # cayendo
+        p = Position(100.0, 102.0)  # 2px debajo de la superficie
+        v = Velocity(0.0, 5.0)  # cayendo
         plat = self._platform(100.0)
-        p2, v2, on_ground, landed = resolve_platform_collision_full(p, v, (plat,))
+        p2, v2, on_ground, _landed = resolve_platform_collision_full(p, v, (plat,))
         assert on_ground
         assert v2.vy == pytest.approx(0.0)
         assert p2.y == pytest.approx(100.0)
 
     def test_no_collision_going_up(self) -> None:
         p = Position(100.0, 102.0)
-        v = Velocity(0.0, -5.0)      # subiendo
+        v = Velocity(0.0, -5.0)  # subiendo
         plat = self._platform(100.0)
         _, _, on_ground, _ = resolve_platform_collision_full(p, v, (plat,))
         assert not on_ground
 
     def test_no_collision_outside_x(self) -> None:
-        p = Position(900.0, 102.0)   # fuera del ancho de la plataforma (0..800)
+        p = Position(900.0, 102.0)  # fuera del ancho de la plataforma (0..800)
         v = Velocity(0.0, 5.0)
         plat = Platform(0.0, 500.0, 100.0, +1, 0)
         _, _, on_ground, _ = resolve_platform_collision_full(p, v, (plat,))
         assert not on_ground
 
     def test_no_collision_far_above(self) -> None:
-        p = Position(100.0, 60.0)    # 40px encima — fuera de ventana
+        p = Position(100.0, 60.0)  # 40px encima — fuera de ventana
         v = Velocity(0.0, 5.0)
         plat = self._platform(100.0)
         _, _, on_ground, _ = resolve_platform_collision_full(p, v, (plat,))
@@ -141,7 +140,7 @@ class TestLadderMovement:
 
     def test_clamps_to_ladder_cx(self) -> None:
         lad = self._ladder()
-        p = Position(210.0, 200.0)   # desplazado
+        p = Position(210.0, 200.0)  # desplazado
         p2, _, _ = resolve_ladder_movement(p, Velocity.zero(), lad, -1)
         assert p2.x == pytest.approx(200.0)
 

@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-import pytest
-
 from donkeykong.domain.collision import (
     mario_collects_bonus,
     mario_hit_by_barrel,
@@ -19,7 +17,6 @@ from donkeykong.domain.entities import (
     BonusKind,
     Flame,
     Mario,
-    MarioState,
     Pauline,
     Position,
     Velocity,
