@@ -37,21 +37,26 @@ Mario debe escalar una estructura de vigas de acero para rescatar a Pauline de l
 
 ---
 
-## Instalación
+## Instalación y arranque rápido
 
-**Requisitos:** Python 3.13+, [uv](https://docs.astral.sh/uv/)
+**Solo necesitas Python 3.13+.** Clona el repositorio y ejecuta:
 
 ```bash
 git clone https://github.com/davidvivo-ia/donkeykong.git
 cd donkeykong
-uv sync
+python persia.py
 ```
+
+`persia.py` instala las dependencias automáticamente con pip si no están presentes y arranca el juego. Funciona en **Windows, macOS y Linux**.
 
 ---
 
-## Uso
+## Uso avanzado (con uv)
 
 ```bash
+# Instalar uv y dependencias
+uv sync
+
 # Partida normal
 uv run donkeykong
 
