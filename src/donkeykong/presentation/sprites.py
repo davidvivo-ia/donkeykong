@@ -213,10 +213,10 @@ def draw_dk(
     frame: int = 0,
     throwing: bool = False,
 ) -> None:
-    """Dibuja a Donkey Kong (66x84 px).
+    """Dibuja a Donkey Kong (72x90 px).
 
-    Los brazos y piernas se dibujan como elipses solapadas con el cuerpo
-    para evitar huecos visuales.
+    Orden de capas: brazos → cuerpo → piernas → cuello → cabeza → cara.
+    La cara siempre se dibuja al final para que nada la tape.
 
     Args:
         surf: superficie destino.
@@ -225,78 +225,85 @@ def draw_dk(
         frame: frame de animación.
         throwing: True cuando lanza un barril.
     """
-    sw, sh = 66, 84
+    sw, sh = 72, 90
     s = pygame.Surface((sw, sh), pygame.SRCALPHA)
 
-    # ── Outline: silueta oscura 2 px alrededor del cuerpo ────────────────────
-    OL = P.DK_OUTLINE
-    pygame.draw.ellipse(s, OL, (6, 26, 54, 46))  # cuerpo
-    pygame.draw.ellipse(s, OL, (18, 10, 30, 26))  # cabeza base
-    _c(s, OL, (33, 17), 19)  # cabeza círculo
-    _c(s, OL, (11, 13), 10)  # oreja izq
-    _c(s, OL, (55, 13), 10)  # oreja der
+    # Coordenadas fijas: cabeza centrada en (36, 20), cuerpo bajo ella
+    HX, HY, HR = 36, 20, 18  # centro y radio de la cabeza
+    BX, BY, BW, BH = 10, 34, 52, 38  # rect del cuerpo
 
-    # ── Brazos (detrás del cuerpo) ────────────────────────────────────────────
+    # ── 1. Brazos ────────────────────────────────────────────────────────────
     tf = frame % 2
     if throwing:
-        pygame.draw.ellipse(s, P.DK_FUR, (0, 36, 14, 26))
-        _c(s, P.DK_FUR, (7, 62), 7)
-        pygame.draw.ellipse(s, P.DK_FUR, (52, 4, 14, 30))
-        _c(s, P.DK_FUR, (59, 5), 7)
-        # Mini barril en la mano derecha
-        pygame.draw.ellipse(s, P.BARREL_D, (51, 0, 16, 10))
-        pygame.draw.ellipse(s, P.BARREL_L, (53, 1, 12, 7))
-        _rect(s, P.BARREL_D, 51, 4, 16, 2)
+        # Brazo izquierdo abajo, derecho arriba con barril
+        pygame.draw.ellipse(s, P.DK_FUR, (1, 42, 14, 28))
+        pygame.draw.ellipse(s, P.DK_FUR, (57, 10, 14, 28))
+        # Barril en mano derecha
+        pygame.draw.ellipse(s, P.BARREL_D, (56, 4, 18, 11))
+        pygame.draw.ellipse(s, P.BARREL_L, (58, 5, 14, 8))
+        _rect(s, P.BARREL_D, 56, 9, 18, 3)
     else:
-        arm_top = 28 if tf == 0 else 24
-        arm_h = 28 if tf == 0 else 32
-        pygame.draw.ellipse(s, P.DK_FUR, (0, arm_top, 14, arm_h))
-        _c(s, P.DK_FUR, (7, arm_top + arm_h), 7)
-        pygame.draw.ellipse(s, P.DK_FUR, (52, arm_top, 14, arm_h))
-        _c(s, P.DK_FUR, (59, arm_top + arm_h), 7)
+        ay = 30 if tf == 0 else 26
+        ah = 30 if tf == 0 else 34
+        pygame.draw.ellipse(s, P.DK_FUR, (1, ay, 13, ah))
+        pygame.draw.ellipse(s, P.DK_FUR, (58, ay, 13, ah))
 
-    # ── Cuerpo ────────────────────────────────────────────────────────────────
-    pygame.draw.ellipse(s, P.DK_FUR, (8, 28, 50, 42))
-    pygame.draw.ellipse(s, P.DK_FACE, (14, 32, 38, 32))
+    # ── 2. Cuerpo ────────────────────────────────────────────────────────────
+    pygame.draw.ellipse(s, P.DK_FUR, (BX, BY, BW, BH))
+    # Panza / pecho más claro
+    pygame.draw.ellipse(s, P.DK_FACE, (BX + 8, BY + 4, BW - 16, BH - 6))
 
-    # ── Piernas ───────────────────────────────────────────────────────────────
-    pygame.draw.ellipse(s, P.DK_FUR, (10, 60, 20, 26))
-    pygame.draw.ellipse(s, P.DK_FUR, (36, 60, 20, 26))
-    pygame.draw.ellipse(s, P.DK_FUR, (4, 74, 26, 10))
-    pygame.draw.ellipse(s, P.DK_FUR, (36, 74, 26, 10))
+    # ── 3. Piernas ───────────────────────────────────────────────────────────
+    pygame.draw.ellipse(s, P.DK_FUR, (11, 62, 22, 26))
+    pygame.draw.ellipse(s, P.DK_FUR, (39, 62, 22, 26))
+    # Pies
+    pygame.draw.ellipse(s, P.DK_INNER, (7, 78, 24, 12))
+    pygame.draw.ellipse(s, P.DK_INNER, (41, 78, 24, 12))
 
-    # ── Cabeza ────────────────────────────────────────────────────────────────
-    _c(s, P.DK_FUR, (33, 17), 17)
-    # Orejas
-    _c(s, P.DK_FUR, (13, 13), 8)
-    _c(s, P.DK_INNER, (13, 13), 5)
-    _c(s, P.DK_FUR, (53, 13), 8)
-    _c(s, P.DK_INNER, (53, 13), 5)
-    # Hocico
-    pygame.draw.ellipse(s, P.DK_FACE, (20, 14, 26, 22))
-    # Ojos
-    pygame.draw.ellipse(s, P.WHITE, (20, 8, 9, 8))
-    pygame.draw.ellipse(s, P.WHITE, (37, 8, 9, 8))
-    _c(s, P.BLACK, (24, 12), 4)
-    _c(s, P.BLACK, (41, 12), 4)
-    _c(s, P.WHITE, (23, 10), 1)
-    _c(s, P.WHITE, (40, 10), 1)
-    # Cejas (enojado)
-    _l(s, P.DK_INNER, (18, 7), (28, 10), 3)
-    _l(s, P.DK_INNER, (38, 10), (48, 7), 3)
-    # Nariz
-    pygame.draw.ellipse(s, P.DK_FACE, (25, 20, 16, 10))
-    _c(s, P.DK_INNER, (29, 24), 3)
-    _c(s, P.DK_INNER, (37, 24), 3)
-    # Boca y dientes
-    _rect(s, P.DK_INNER, 22, 30, 22, 4, 1)
-    _rect(s, P.TOOTH, 23, 30, 9, 3)
-    _rect(s, P.TOOTH, 34, 30, 9, 3)
+    # ── 4. Cuello (tapa la union cuerpo-cabeza) ──────────────────────────────
+    pygame.draw.ellipse(s, P.DK_FUR, (24, 26, 24, 16))
 
-    # Destellos de ojos en ira (cuando throwing_flash > 0)
+    # ── 5. Cabeza (círculo grande de piel) ────────────────────────────────────
+    # Orejas primero (quedan detrás de la cabeza)
+    _c(s, P.DK_FUR, (HX - 20, HY - 4), 10)
+    _c(s, P.DK_INNER, (HX - 20, HY - 4), 6)
+    _c(s, P.DK_FUR, (HX + 20, HY - 4), 10)
+    _c(s, P.DK_INNER, (HX + 20, HY - 4), 6)
+    # Cabeza
+    _c(s, P.DK_FUR, (HX, HY), HR)
+
+    # ── 6. CARA (siempre encima de todo) ─────────────────────────────────────
+    # Hocico/morro grande y claro — ocupa la mitad inferior de la cabeza
+    pygame.draw.ellipse(s, P.DK_FACE, (HX - 14, HY - 2, 28, 24))
+
+    # Ojos — blancos grandes bien arriba del hocico
+    EY = HY - 10  # y del borde superior de los ojos
+    pygame.draw.ellipse(s, P.WHITE, (HX - 16, EY, 12, 10))
+    pygame.draw.ellipse(s, P.WHITE, (HX + 4, EY, 12, 10))
+    # Pupilas negras
+    _c(s, P.BLACK, (HX - 10, EY + 5), 4)
+    _c(s, P.BLACK, (HX + 10, EY + 5), 4)
+    # Destellos blancos de vida
+    _c(s, P.WHITE, (HX - 11, EY + 3), 1)
+    _c(s, P.WHITE, (HX + 9, EY + 3), 1)
+
+    # Cejas enojadas
+    _l(s, P.DK_INNER, (HX - 16, EY - 2), (HX - 6, EY + 2), 3)
+    _l(s, P.DK_INNER, (HX + 6, EY + 2), (HX + 16, EY - 2), 3)
+
+    # Nariz — dos agujeros en el hocico
+    _c(s, P.DK_INNER, (HX - 5, HY + 7), 3)
+    _c(s, P.DK_INNER, (HX + 5, HY + 7), 3)
+
+    # Boca y dientes blancos
+    _rect(s, P.DK_INNER, HX - 11, HY + 11, 22, 5, 2)
+    _rect(s, P.TOOTH, HX - 10, HY + 11, 9, 4)
+    _rect(s, P.TOOTH, HX + 1, HY + 11, 9, 4)
+
+    # Ojos rojos si está lanzando (enojado extra)
     if throwing:
-        _c(s, P.RED, (24, 12), 4)
-        _c(s, P.RED, (41, 12), 4)
+        _c(s, P.RED, (HX - 10, EY + 5), 4)
+        _c(s, P.RED, (HX + 10, EY + 5), 4)
 
     surf.blit(s, (int(cx) - sw // 2, int(by) - sh + 2))
 
