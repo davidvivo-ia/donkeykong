@@ -219,20 +219,70 @@ def _update_mario(
 # ---------------------------------------------------------------------------
 
 
+_BARREL_LADDER_PROB: float = 0.40  # probabilidad de tomar una escalera
+
+
 def _update_barrel(
     barrel: Barrel,
     level: Level,
     speed_mult: float,
     sounds: list[SoundEvent],
+    rng: RNG,
 ) -> Barrel:
-    """Aplica física a un barril y retorna el nuevo estado."""
+    """Aplica física a un barril, incluyendo descenso por escaleras."""
+
+    # ── Modo escalera ────────────────────────────────────────────────────────
+    if barrel.on_ladder and barrel.ladder_cx is not None:
+        lad = next(
+            (ld for ld in level.ladders if ld.cx == barrel.ladder_cx),
+            None,
+        )
+        if lad is None:
+            return replace(barrel, on_ladder=False, ladder_cx=None)
+
+        new_y = barrel.position.y + phy.CLIMB_SPEED * 1.6
+        pos = Position(lad.cx, new_y)
+        roll = barrel.roll_frame + 1
+
+        if new_y >= lad.y_bottom:
+            # Llegó al fondo: aterrizar en la plataforma inferior
+            pos = Position(lad.cx, lad.y_bottom)
+            new_pid = next(
+                (p.pid for p in level.platforms if abs(p.y - lad.y_bottom) < 4),
+                barrel.current_pid,
+            )
+            new_vel = phy.barrel_roll_velocity(
+                next((p.direction for p in level.platforms if p.pid == new_pid), +1),
+                speed_mult,
+            )
+            sounds.append(SoundEvent.BARREL_LAND)
+            return replace(
+                barrel,
+                position=pos,
+                velocity=new_vel,
+                current_pid=new_pid,
+                roll_frame=roll,
+                on_ladder=False,
+                ladder_cx=None,
+            )
+
+        return replace(
+            barrel,
+            position=pos,
+            velocity=Velocity.zero(),
+            roll_frame=roll,
+        )
+
+    # ── Modo rodando / cayendo ───────────────────────────────────────────────
     vel = phy.apply_gravity(barrel.velocity, phy.BARREL_GRAVITY_MULT)
     pos = phy.integrate(barrel.position, vel)
 
     current_pid = barrel.current_pid
     new_vel = vel
+    entered_ladder = False
+    chosen_lad_cx: float | None = None
 
-    # Tolerancia = velocidad máxima del barril para capturar overshoot de borde
+    # Tolerancia de borde para no perder plataformas al caer
     _TOL = phy.BARREL_SPEED * speed_mult + 1.0
     for plat in level.platforms:
         if not (plat.x_left - _TOL <= pos.x <= plat.x_right + _TOL):
@@ -246,18 +296,30 @@ def _update_barrel(
                 sounds.append(SoundEvent.BARREL_LAND)
             else:
                 new_vel = vel.zero_y()
+
+            # Comprobar si hay una escalera hacia abajo en esta posición
+            for lad in level.ladders:
+                near_x = abs(pos.x - lad.cx) < 18
+                on_top = abs(lad.y_top - plat.y) < 6
+                leads_down = lad.y_bottom > plat.y
+                if near_x and on_top and leads_down and rng.random() < _BARREL_LADDER_PROB:
+                    entered_ladder = True
+                    chosen_lad_cx = lad.cx
+                    break
             break
 
     alive = pos.y <= phy.SCREEN_HEIGHT + 40.0
-    roll = barrel.roll_frame + (1 if vel.vx != 0 else 0)
+    roll = barrel.roll_frame + (1 if new_vel.vx != 0 else 0)
 
     return replace(
         barrel,
         position=pos,
-        velocity=new_vel,
+        velocity=Velocity.zero() if entered_ladder else new_vel,
         current_pid=current_pid,
         roll_frame=roll,
         alive=alive,
+        on_ladder=entered_ladder,
+        ladder_cx=chosen_lad_cx,
     )
 
 
@@ -500,7 +562,7 @@ class GameEngine:
 
         jumped_ids = set(world.jumped_barrel_ids)
         for b in world.barrels:
-            nb = _update_barrel(b, world.level, sm, sounds)
+            nb = _update_barrel(b, world.level, sm, sounds, self._rng)
             if nb.alive:
                 barrels.append(nb)
                 # Salto sobre barril

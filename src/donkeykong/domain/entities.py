@@ -233,6 +233,8 @@ class Barrel:
     current_pid: int  # id de la plataforma sobre la que rueda
     roll_frame: int  # contador de rotación visual
     alive: bool
+    on_ladder: bool = field(default=False)
+    ladder_cx: float | None = field(default=None)
 
     HALF_W: float = field(default=9.0, compare=False)
     HEIGHT: float = field(default=14.0, compare=False)
