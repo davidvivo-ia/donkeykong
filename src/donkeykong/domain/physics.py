@@ -11,14 +11,14 @@ from donkeykong.domain.level import Ladder, Platform
 
 # Constantes físicas [DATO] tomadas de legacy/donkeykong.py
 GRAVITY: float = 0.55
-JUMP_VELOCITY: float = -13.0
+JUMP_VELOCITY: float = -9.5
 WALK_SPEED: float = 3.2
 CLIMB_SPEED: float = 2.8
 BARREL_SPEED: float = 2.8
 BARREL_GRAVITY_MULT: float = 1.1
 FLAME_SPEED: float = 1.4
 SCREEN_WIDTH: float = 800.0
-SCREEN_HEIGHT: float = 600.0
+SCREEN_HEIGHT: float = 650.0
 
 
 # ---------------------------------------------------------------------------

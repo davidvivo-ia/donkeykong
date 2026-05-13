@@ -9,7 +9,7 @@ class DisplayConfig(BaseModel):
     """Configuración de pantalla."""
 
     width: int = Field(default=800, gt=0)
-    height: int = Field(default=600, gt=0)
+    height: int = Field(default=650, gt=0)
     fps: int = Field(default=60, gt=0, le=240)
     title: str = Field(default="DONKEY KONG")
 

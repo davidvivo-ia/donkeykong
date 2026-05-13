@@ -67,10 +67,20 @@ class TestBuildLevel:
     def test_dk_start_on_top_platform(self) -> None:
         lvl = build_level(1)
         top_platform = lvl.platforms[-1]
-        # DK debe estar sobre la plataforma superior
         assert lvl.dk_start.y == top_platform.y
 
     def test_mario_start_on_ground(self) -> None:
         lvl = build_level(1)
         ground = lvl.platforms[0]
         assert lvl.mario_start.y == ground.y
+
+    def test_top_platform_clears_hud(self) -> None:
+        """La plataforma superior debe quedar por debajo de los 38px del HUD."""
+        lvl = build_level(1)
+        top_platform = lvl.platforms[-1]
+        assert top_platform.y > 50  # cabeza del mono visible sobre el HUD
+
+    def test_ground_within_screen(self) -> None:
+        lvl = build_level(1)
+        ground = lvl.platforms[0]
+        assert ground.y <= 650

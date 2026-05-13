@@ -94,29 +94,29 @@ class Level:
 
 # [DATO] Valores tomados directamente de legacy/donkeykong.py
 _PLATFORMS: tuple[Platform, ...] = (
-    Platform(10, 790, 535, +1, 0),  # Suelo
-    Platform(30, 760, 425, -1, 1),  # Plataforma 2
-    Platform(30, 760, 315, +1, 2),  # Plataforma 3
-    Platform(30, 760, 205, -1, 3),  # Plataforma 4
-    Platform(10, 760, 95, +1, 4),  # Cima (zona DK)
+    Platform(10, 790, 585, +1, 0),  # Suelo
+    Platform(30, 760, 475, -1, 1),  # Plataforma 2
+    Platform(30, 760, 365, +1, 2),  # Plataforma 3
+    Platform(30, 760, 255, -1, 3),  # Plataforma 4
+    Platform(10, 760, 145, +1, 4),  # Cima (zona DK)
 )
 
 _LADDERS: tuple[Ladder, ...] = (
-    Ladder(160, 425, 535),
-    Ladder(580, 425, 535),
-    Ladder(250, 315, 425),
-    Ladder(645, 315, 425),
-    Ladder(185, 205, 315),
-    Ladder(605, 205, 315),
-    Ladder(370, 95, 205),
+    Ladder(160, 475, 585),
+    Ladder(580, 475, 585),
+    Ladder(250, 365, 475),
+    Ladder(645, 365, 475),
+    Ladder(185, 255, 365),
+    Ladder(605, 255, 365),
+    Ladder(370, 145, 255),
 )
 
 CANONICAL_LEVEL = Level(
     platforms=_PLATFORMS,
     ladders=_LADDERS,
-    dk_start=Position(115.0, 95.0),
-    pauline_start=Position(620.0, 95.0),
-    mario_start=Position(60.0, 535.0),
+    dk_start=Position(115.0, 145.0),
+    pauline_start=Position(620.0, 145.0),
+    mario_start=Position(60.0, 585.0),
 )
 
 
