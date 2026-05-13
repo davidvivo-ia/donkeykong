@@ -37,9 +37,17 @@ class TestLadder:
         lad = Ladder(160.0, 425.0, 535.0)
         assert not lad.mario_can_grab(160.0, 300.0)
 
-    def test_mario_cannot_grab_misaligned(self) -> None:
+    def test_mario_can_grab_at_y_top(self) -> None:
+        """Mario parado ENCIMA de la escalera puede agarrarla para bajar."""
         lad = Ladder(160.0, 425.0, 535.0)
-        assert not lad.mario_can_grab(300.0, 500.0)
+        assert lad.mario_can_grab(160.0, 425.0)  # feet_y == y_top
+
+    def test_mario_can_grab_at_y_bottom(self) -> None:
+        """Mario parado en el pie de la escalera puede agarrarla para subir."""
+        lad = Ladder(160.0, 425.0, 535.0)
+        assert lad.mario_can_grab(160.0, 535.0)  # feet_y == y_bottom
+
+
 
 
 class TestBuildLevel:

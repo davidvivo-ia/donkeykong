@@ -65,7 +65,7 @@ class Ladder:
 
     def mario_can_grab(self, mario_cx: float, mario_feet_y: float) -> bool:
         """True si Mario puede agarrar/usar la escalera."""
-        return self.mario_aligned(mario_cx) and self.y_top < mario_feet_y < self.y_bottom + 4
+        return self.mario_aligned(mario_cx) and self.y_top - 6 <= mario_feet_y <= self.y_bottom + 4
 
 
 # ---------------------------------------------------------------------------
