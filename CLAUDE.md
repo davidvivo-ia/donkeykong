@@ -3,7 +3,7 @@
 ## Arrancar el juego
 
 ```bash
-python persia.py
+python donkeykong.py
 ```
 
 Funciona en Windows, macOS y Linux. Instala las dependencias automáticamente
