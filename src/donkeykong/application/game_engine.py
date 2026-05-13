@@ -252,7 +252,7 @@ def _update_barrel(
                 barrel.current_pid,
             )
             new_vel = phy.barrel_roll_velocity(
-                next((p.direction for p in level.platforms if p.pid == new_pid), +1),
+                rng.choice([-1, +1]),
                 speed_mult,
             )
             sounds.append(SoundEvent.BARREL_LAND)
