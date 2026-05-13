@@ -228,6 +228,14 @@ def draw_dk(
     sw, sh = 66, 84
     s = pygame.Surface((sw, sh), pygame.SRCALPHA)
 
+    # ── Outline: silueta oscura 2 px alrededor del cuerpo ────────────────────
+    OL = P.DK_OUTLINE
+    pygame.draw.ellipse(s, OL, (6, 26, 54, 46))  # cuerpo
+    pygame.draw.ellipse(s, OL, (18, 10, 30, 26))  # cabeza base
+    _c(s, OL, (33, 17), 19)  # cabeza círculo
+    _c(s, OL, (11, 13), 10)  # oreja izq
+    _c(s, OL, (55, 13), 10)  # oreja der
+
     # ── Brazos (detrás del cuerpo) ────────────────────────────────────────────
     tf = frame % 2
     if throwing:

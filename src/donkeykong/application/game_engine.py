@@ -232,11 +232,13 @@ def _update_barrel(
     current_pid = barrel.current_pid
     new_vel = vel
 
+    # Tolerancia = velocidad máxima del barril para capturar overshoot de borde
+    _TOL = phy.BARREL_SPEED * speed_mult + 1.0
     for plat in level.platforms:
-        if not plat.contains_x(pos.x):
+        if not (plat.x_left - _TOL <= pos.x <= plat.x_right + _TOL):
             continue
         delta = pos.y - plat.y
-        if 0.0 <= delta <= 24.0 and vel.vy >= 0:
+        if 0.0 <= delta <= max(24.0, vel.vy + 4.0) and vel.vy >= 0:
             pos = pos.with_y(plat.y)
             if current_pid != plat.pid:
                 current_pid = plat.pid
